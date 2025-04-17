@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rainbow Text Editor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    .letter-settings {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .letter-settings input[type="color"] {
+      margin-left: 0.5rem;
+    }
+    #preview {
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      white-space: pre;
+      font-family: monospace;
+      background: #f9f9f9;
+    }
+    #copyBtn {
+      margin-top: 0.5rem;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Rainbow Text Editor</h2>
+  <label for="text">Enter up to 7 characters:</label><br />
+  <input type="text" id="text" maxlength="7" oninput="updateEditor()" /><br /><br />
+
+  <button onclick="applyRainbow()">Apply Rainbow</button>
+  <input type="color" id="globalColor" />
+  <button onclick="applySingleColor()">Apply to All</button>
+
+  <div id="editor"></div>
+  <h3>Preview:</h3>
+  <div id="preview"></div>
+  <button id="copyBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
+
+  <script>
+    const rainbowColors = [
+      'FF0000', 'FF7F00', 'FFFF00', '00FF00', '0000FF', '4B0082', '9400D3'
+    ];
+
+    function updateEditor() {
+      const text = document.getElementById('text').value;
+      const editor = document.getElementById('editor');
+      editor.innerHTML = '';
+
+      for (let i = 0; i < text.length; i++) {
+        const div = document.createElement('div');
+        div.className = 'letter-settings';
+        div.innerHTML = `
+          <label>${text[i]}</label>
+          <input type="color" value="#000000" data-index="${i}" onchange="updatePreview()">
+        `;
+        editor.appendChild(div);
+      }
+      updatePreview();
+    }
+
+    function applyRainbow() {
+      const inputs = document.querySelectorAll('#editor input[type="color"]');
+      inputs.forEach((input, i) => {
+        input.value = '#' + rainbowColors[i % rainbowColors.length];
+      });
+      updatePreview();
+    }
+
+    function applySingleColor() {
+      const color = document.getElementById('globalColor').value;
+      const inputs = document.querySelectorAll('#editor input[type="color"]');
+      inputs.forEach(input => input.value = color);
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const text = document.getElementById('text').value;
+      const colors = document.querySelectorAll('#editor input[type="color"]');
+      const preview = document.getElementById('preview');
+      let output = '';
+
+      for (let i = 0; i < text.length; i++) {
+        const hex = colors[i].value.replace('#', '').toUpperCase();
+        output += `\u0007\u0001XXXXX\u0007${hex}${text[i]}\n`;
+      }
+      preview.textContent = output;
+    }
+
+    function copyToClipboard() {
+      const previewText = document.getElementById('preview').textContent;
+      navigator.clipboard.writeText(previewText)
+        .then(() => alert('Copied to clipboard!'))
+        .catch(err => alert('Failed to copy: ' + err));
+    }
+  </script>
+  <pre>XXXXXFF0000R
+XXXXXFF7F00U
+XXXXXFFFF00N
+S
+XXXXX0000FFD
+XXXXX4B0082E
+XXXXX9400D3A
+XXXXXFF1493D</pre>
+</body>
+</html>
